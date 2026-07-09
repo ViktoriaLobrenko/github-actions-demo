@@ -50,6 +50,7 @@ jobs:
             git config user.email "github-actions@github.com"
             git add README.md
             git commit -m "Add build status badge to README"
+            git pull --rebase origin main
             git push origin HEAD:main
           fi
         env:
