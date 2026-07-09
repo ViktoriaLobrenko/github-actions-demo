@@ -25,9 +25,33 @@ jobs:
 
       - name: Run tests with coverage
         run: pytest --cov=myapp --cov-fail-under=70 --cov-report=xml
+        env:
+          PYTHONPATH: ${{ github.workspace }}
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage.xml
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Add badge to README
+        run: |
+          BADGE="![CI](https://github.com/${{ github.repository }}/actions/workflows/workflow.yml/badge.svg)"
+          if ! grep -q "actions/workflows/workflow.yml/badge.svg" README.md; then
+            echo "$BADGE" >> README.md
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
+            git add README.md
+            git commit -m "Add build status badge to README"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
