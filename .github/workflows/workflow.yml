@@ -33,3 +33,24 @@ jobs:
         with:
           name: coverage-report
           path: coverage.xml
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Add badge to README
+        run: |
+          BADGE="![CI](https://github.com/${{ github.repository }}/actions/workflows/workflow.yml/badge.svg)"
+          if ! grep -q "actions/workflows/workflow.yml/badge.svg" README.md; then
+            echo "$BADGE" >> README.md
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
+            git add README.md
+            git commit -m "Add build status badge to README"
+            git push
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
